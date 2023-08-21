@@ -64,7 +64,7 @@ When doing this call we'll be rewarded with:
 Now in case we're interested in the whole response including the status code, we can replace `.body(Joke.class)` with `.toEntity(Joke.class)`.
 Or in case of a call where the response does not interest us, we can use `.toBodilessEntity()`.
 
-=== Using declarative HTTP interface
+=== Using a declarative HTTP interface
 
 Now as mentioned at the start, one of the upsides of the new RestClient is that we can also use it for declarative HTTP clients.
 
