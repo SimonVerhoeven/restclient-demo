@@ -103,6 +103,38 @@ And we'll receive:
 }
 ----
 
+=== Error handling
+
+By default `RestClient` will throw a subclass of `RestClientException` upon a `4\\**` or `5**`, but we can override this using `onStatus`
+so that we can define our own status handlers:
+
+[code,java]
+----
+.onStatus(HttpStatusCode::is4xxClientError, ((request, response) -> {
+    throw new PunException();
+}))
+----
+
+=== More granular control
+
+In some cases we might want to do some more advanced things for which we need access to the underlying `HTTP request` or `HTTP response`.
+This can be achieved by using `exchange`.
+
+*note*: Status handlers are not applied when using `exchange` as you already have full access to the response, so you can perform any needed error handling.
+
+[code,java]
+----
+return this.restClient
+    .get()
+    .uri("/j/{jokeId}", "UNKNOWN")
+    .accept(MediaType.APPLICATION_JSON)
+    .exchange((clientRequest, clientResponse) ->  {
+        // some criteria to determine our joke's too punny
+        return "Singing in the shower is fun until you get soap in your mouth. Then it's a soap opera";
+    });
+----
+
+
 == Wrap-up
 
 I hope this shed some light on the how, and why.

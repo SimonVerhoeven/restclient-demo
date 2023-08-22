@@ -1,12 +1,14 @@
 package dev.simonverhoeven.restclientdemo;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.support.RestClientAdapter;
 import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
@@ -51,6 +53,37 @@ public class JokeController {
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .toBodilessEntity();
+    }
+
+    @GetMapping("/joke-not-found")
+    String getJokeNotFound() {
+        return this.restClient
+                .get()
+                .uri("/j/{jokeId}", "UNKNOWN")
+                .accept(MediaType.TEXT_PLAIN)
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, ((request, response) -> {
+                    throw new PunException();
+                }))
+                .body(String.class);
+    }
+
+    static class PunException extends RuntimeException {
+        public PunException() {
+            super("Sorry, your joke could not be found. Here's a consolation one: 'If a pig loses its voice, does it become disgruntled?'");
+        }
+    }
+
+    @GetMapping("/joke-exchange")
+    String getJokeExchange() {
+        return this.restClient
+                .get()
+                .uri("/j/{jokeId}", "UNKNOWN")
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange((clientRequest, clientResponse) ->  {
+                    // some criteria to determine our joke's too punny
+                    return "Singing in the shower is fun until you get soap in your mouth. Then it's a soap opera";
+                });
     }
 
     interface JokeClient {
